@@ -1,0 +1,10 @@
+# Netlify Configuration for Next.js 15
+[build]
+  command = "npm run build"
+
+# Use Netlify's Essential Next.js plugin for Next.js 15
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+[build.environment]
+  NODE_VERSION = "20"

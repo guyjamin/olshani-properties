@@ -1,0 +1,358 @@
+# 🚀 Olshani Properties - HostPinnacle Deployment Instructions
+
+## ✅ ZIP File Contents
+
+This ZIP file (`olshani-deployment.zip` - 571 MB) contains everything you need to deploy your Next.js website to HostPinnacle.
+
+**Included:**
+- ✅ `.next/` - Production build
+- ✅ `public/` - All images and static files
+- ✅ `app/` - Application pages
+- ✅ `components/` - React components
+- ✅ `data/` - Property listings (properties.json)
+- ✅ `lib/`, `hooks/`, `styles/` - Supporting code
+- ✅ `package.json`, `package-lock.json` - Dependencies
+- ✅ `server.js` - Node.js server
+- ✅ `.htaccess` - Apache configuration
+- ✅ All configuration files
+
+---
+
+## 📋 DEPLOYMENT STEPS
+
+### **STEP 1: Login to HostPinnacle cPanel**
+
+1. Go to your cPanel URL (usually `https://olshaniproperties.co.ke:2083`)
+2. Login with your cPanel credentials
+
+---
+
+### **STEP 2: Upload the ZIP File**
+
+1. **Open File Manager** in cPanel
+2. **Navigate to:** `public_html/` (or your domain's root directory)
+3. **Click "Upload"** button (top right)
+4. **Select:** `olshani-deployment.zip` (this file)
+5. **Wait** for upload to complete (~5-15 minutes depending on your connection)
+6. **Close** the upload window when done
+
+---
+
+### **STEP 3: Extract the ZIP File**
+
+1. **In File Manager**, find `olshani-deployment.zip`
+2. **Right-click** on the ZIP file
+3. **Select "Extract"**
+4. **Choose:** Extract to current directory (`public_html/`)
+5. **Click "Extract File(s)"**
+6. **Wait** for extraction to complete
+7. **Delete** the ZIP file (optional, to save space)
+
+---
+
+### **STEP 4: Setup Node.js Application**
+
+1. **Find "Setup Node.js App"** in cPanel (search for it)
+2. **Click "Create Application"**
+3. **Fill in these settings:**
+
+   ```
+   Node.js version: 20.x (or latest available)
+   Application mode: Production
+   Application root: /home/[your-username]/public_html
+   Application URL: olshaniproperties.co.ke
+   Application startup file: server.js
+   ```
+
+4. **Click "Create"**
+5. **Note:** cPanel will show you the command to run for npm install
+
+---
+
+### **STEP 5: Install Dependencies**
+
+**Option A: Using cPanel Terminal (Easier)**
+
+1. **In cPanel**, find and click **"Terminal"**
+2. **Run these commands:**
+   ```bash
+   cd ~/public_html
+   npm install --production
+   ```
+3. **Wait** 5-10 minutes for installation to complete
+
+**Option B: Using SSH**
+
+1. **Connect via SSH:**
+   ```bash
+   ssh your-username@olshaniproperties.co.ke
+   ```
+2. **Run:**
+   ```bash
+   cd ~/public_html
+   npm install --production
+   ```
+
+---
+
+### **STEP 6: Start the Application**
+
+1. **Go back to "Setup Node.js App"** in cPanel
+2. **Find your application** in the list
+3. **Click "Restart"** (or "Start" if not running)
+4. **Status should show:** "Running" ✅
+
+---
+
+### **STEP 7: Setup SSL Certificate (HTTPS)**
+
+1. **In cPanel**, go to **"SSL/TLS Status"**
+2. **Find:** `olshaniproperties.co.ke`
+3. **Click "Run AutoSSL"**
+4. **Wait** 2-5 minutes for SSL certificate installation
+5. **Verify:** Padlock icon should appear next to domain
+
+---
+
+### **STEP 8: Verify .htaccess Configuration**
+
+1. **In File Manager**, check that `.htaccess` exists in `public_html/`
+2. **If missing or incorrect**, create/edit it with this content:
+
+```apache
+RewriteEngine On
+
+# Force HTTPS
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Redirect www to non-www
+RewriteCond %{HTTP_HOST} ^www\.olshaniproperties\.co\.ke [NC]
+RewriteRule ^(.*)$ https://olshaniproperties.co.ke/$1 [L,R=301]
+
+# Proxy to Node.js (port may vary - check your Node.js app settings)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ http://localhost:3000/$1 [P,L]
+```
+
+**Note:** If cPanel assigned a different port, update `3000` to that port number.
+
+---
+
+### **STEP 9: Test Your Website**
+
+1. **Open browser** and visit: `https://olshaniproperties.co.ke`
+2. **Check these:**
+   - ✅ Homepage loads
+   - ✅ All project listings display
+   - ✅ Individual project pages work
+   - ✅ Images load correctly
+   - ✅ Contact page accessible
+   - ✅ About page accessible
+   - ✅ Search and filters work
+   - ✅ WhatsApp button works
+   - ✅ No console errors (press F12)
+
+---
+
+## 🚨 TROUBLESHOOTING
+
+### **Problem: Application Won't Start**
+
+**Check:**
+1. Node.js version is 20 or higher
+2. `server.js` is set as startup file
+3. Dependencies installed: `npm install --production`
+4. Check logs: cPanel → Setup Node.js App → "Open Logs"
+
+**Solution:**
+```bash
+cd ~/public_html
+npm install --production
+# Then restart app in cPanel
+```
+
+---
+
+### **Problem: Images Not Loading**
+
+**Check:**
+1. Images are in `public/` folder
+2. File permissions are correct
+3. Paths in code start with `/`
+
+**Solution:**
+```bash
+cd ~/public_html/public
+chmod 644 *.jpg
+chmod 644 *.png
+chmod 644 *.webp
+```
+
+---
+
+### **Problem: 404 Errors on Page Refresh**
+
+**Check:**
+1. `.htaccess` file exists in `public_html/`
+2. Reverse proxy rules are correct
+3. Apache mod_rewrite is enabled
+
+**Solution:**
+- Verify `.htaccess` content (see Step 8)
+- Contact HostPinnacle support to enable mod_rewrite
+
+---
+
+### **Problem: SSL Not Working**
+
+**Check:**
+1. AutoSSL completed successfully
+2. HTTPS redirect in `.htaccess`
+3. Browser cache cleared
+
+**Solution:**
+- Run AutoSSL again
+- Clear browser cache (Ctrl+Shift+Delete)
+- Wait 5-10 minutes for DNS propagation
+
+---
+
+### **Problem: Port Mismatch**
+
+**Check:**
+1. In cPanel → Setup Node.js App, note the port number
+2. Update `.htaccess` if port is not 3000
+
+**Solution:**
+Edit `.htaccess` and change:
+```apache
+RewriteRule ^(.*)$ http://localhost:YOUR_PORT/$1 [P,L]
+```
+
+---
+
+## 📊 WHAT'S INCLUDED
+
+### **File Structure After Extraction:**
+
+```
+public_html/
+├── .next/                  (Production build - 50MB)
+├── public/                 (Images - 115MB)
+│   ├── Projects_*.jpg
+│   ├── Gaia-*.jpg
+│   ├── olshani-logo.png
+│   └── ...
+├── app/                    (Pages)
+├── components/             (React components)
+├── data/
+│   └── properties.json     (All property listings)
+├── lib/                    (Utilities)
+├── hooks/                  (React hooks)
+├── styles/                 (CSS)
+├── package.json            (Dependencies list)
+├── package-lock.json       (Locked versions)
+├── server.js               (Node.js server)
+├── next.config.mjs         (Next.js config)
+├── .htaccess               (Apache config)
+└── ...other config files
+```
+
+---
+
+## ✅ DEPLOYMENT CHECKLIST
+
+- [ ] ZIP file uploaded to cPanel
+- [ ] ZIP file extracted to `public_html/`
+- [ ] Node.js app created (v20+, Production mode)
+- [ ] Dependencies installed (`npm install --production`)
+- [ ] Application started/restarted
+- [ ] Status shows "Running"
+- [ ] SSL certificate installed
+- [ ] `.htaccess` configured correctly
+- [ ] Website accessible at https://olshaniproperties.co.ke
+- [ ] All pages working
+- [ ] Images loading
+- [ ] No console errors
+- [ ] Mobile responsive
+
+---
+
+## 🔄 FUTURE UPDATES
+
+When you make changes to the website:
+
+1. **Build locally:** `npm run build`
+2. **Create new ZIP** with updated files
+3. **Upload to cPanel**
+4. **Extract** (overwrite existing files)
+5. **Restart application** in cPanel
+6. **Test** the live site
+
+**Or update specific files:**
+- Code changes: Upload `.next/`, `app/`, `components/`
+- Data changes: Upload `data/properties.json`
+- Images: Upload to `public/`
+
+---
+
+## 📞 NEED HELP?
+
+### **Check Application Logs:**
+
+**Via cPanel:**
+- Setup Node.js App → Click your app → "Open Logs"
+
+**Via Terminal/SSH:**
+```bash
+cd ~/public_html
+cat logs/app.log
+```
+
+### **Contact Support:**
+- **HostPinnacle Support:** Contact via your hosting panel
+- **Node.js Issues:** Ensure version 20+ is available
+- **Permission Issues:** Contact HostPinnacle to fix file permissions
+
+---
+
+## 🎯 QUICK SUMMARY
+
+1. **Upload** `olshani-deployment.zip` to cPanel
+2. **Extract** in `public_html/`
+3. **Create** Node.js app (v20, Production, server.js)
+4. **Install** dependencies: `npm install --production`
+5. **Start** application
+6. **Setup** SSL (AutoSSL)
+7. **Test** website
+
+**Estimated Time:** 30-45 minutes (mostly waiting for uploads/installs)
+
+---
+
+## 📝 IMPORTANT NOTES
+
+1. **Large Images:** Your images total ~115MB. Upload will take time.
+2. **Node.js 20+ Required:** Ensure HostPinnacle supports Node.js 20 or higher
+3. **SSH Access:** Required for `npm install` - ensure it's enabled
+4. **Memory:** Next.js needs at least 512MB RAM - check your hosting plan
+5. **Backup:** Keep this ZIP file as a backup of your deployment
+
+---
+
+## ✨ YOU'RE READY!
+
+Everything you need is in this ZIP file. Follow the steps above, and your website will be live at:
+
+**https://olshaniproperties.co.ke**
+
+Good luck with your deployment! 🚀
+
+---
+
+**Created:** 2025-12-06  
+**Version:** 1.0  
+**Build:** Production  
+**Size:** 571 MB

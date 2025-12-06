@@ -1,0 +1,19 @@
+{
+    "name": "olshani-listings",
+    "version": "0.1.0",
+    "private": true,
+    "main": "app.js",
+    "scripts": {
+        "start": "node app.js"
+    },
+    "dependencies": {
+        "next": "15.2.4",
+        "react": "^19.0.0",
+        "react-dom": "^19.0.0",
+        "sharp": "latest"
+    },
+    "overrides": {
+        "react": "$react",
+        "react-dom": "$react-dom"
+    }
+}
