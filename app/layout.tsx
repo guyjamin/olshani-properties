@@ -17,22 +17,23 @@ const playfair = Playfair_Display({
 
 export const metadata: Metadata = {
   title: {
-    default: "Olshani Properties | Premium Apartments in Nairobi",
+    default: "Olshani Properties | Official Website",
     template: "%s | Olshani Properties",
   },
   description:
-    "Discover luxury apartments in Westlands & Kilimani, Nairobi. DIPLOMAT, GAIA, and EMERALD residences offer premium living with world-class amenities. 13 projects, prices from KSh 5.59M.",
+    "Olshani Properties - The official website for premium apartments in Nairobi. Discover our luxury DIPLOMAT, GAIA, and EMERALD residences in Westlands & Kilimani.",
   keywords: [
+    "Olshani",
+    "Olshani Properties",
+    "Olshani Real Estate",
+    "Olshani Listings",
+    "Olshani Apartments",
     "luxury apartments Nairobi",
     "Westlands apartments",
     "Kilimani apartments",
     "premium properties Kenya",
     "DIPLOMAT residences",
     "GAIA apartments",
-    "real estate Nairobi",
-    "apartments for sale Westlands",
-    "luxury living Nairobi",
-    "Olshani Properties",
   ],
   authors: [{ name: "Olshani Properties" }],
   creator: "Olshani Properties",
@@ -44,11 +45,10 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_KE",
-    url: "/",
-    siteName: "Olshani Properties",
+    url: "https://olshaniproperties.co.ke",
     title: "Olshani Properties | Premium Apartments in Nairobi",
-    description:
-      "Discover luxury apartments in Westlands & Kilimani. 13 premium projects with world-class amenities. Prices from KSh 5.59M.",
+    description: "Welcome to Olshani Properties. Explore our exclusive portfolio of luxury residences including DIPLOMAT and GAIA.",
+    siteName: "Olshani Properties",
     images: [
       {
         url: "/olshani-logo.png",
@@ -61,10 +61,9 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Olshani Properties | Premium Apartments in Nairobi",
-    description:
-      "Discover luxury apartments in Westlands & Kilimani. 13 premium projects with world-class amenities.",
+    description: "Discover luxury apartments in Westlands & Kilimani. 13 premium projects with world-class amenities.",
     images: ["/olshani-logo.png"],
-    creator: "@olshaniproperties", // Update with your actual Twitter handle
+    creator: "@olshaniproperties",
   },
   robots: {
     index: true,
@@ -78,25 +77,50 @@ export const metadata: Metadata = {
     },
   },
   verification: {
-    // google: "your-google-verification-code", // Add when you have it
-    // yandex: "your-yandex-verification-code",
-    // bing: "your-bing-verification-code",
+    google: "Mh9C9Re9qOLdUnc8cRAHCPHx1YwWLQ7IwDETeNnm9XA",
   },
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode
+}>) {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "RealEstateAgent",
+    name: "Olshani Properties",
+    image: "https://olshaniproperties.co.ke/logo.png",
+    description: "Premier real estate developer in Nairobi specializing in luxury apartments.",
+    url: "https://olshaniproperties.co.ke",
+    telephone: "+254700000000",
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: "Nairobi",
+      addressCountry: "KE",
+    },
+    sameAs: [
+      "https://facebook.com/olshaniproperties",
+      "https://instagram.com/olshaniproperties",
+    ],
+  }
+
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head />
-      <body>
-        <SkipToContent />
+    <html lang="en" className={`${playfair.variable} scroll-smooth`} suppressHydrationWarning>
+      <body className={GeistSans.className}>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         <ClientThemeProvider>
-          <Suspense fallback={null}>
+          <SkipToContent />
+          <div className="flex min-h-screen flex-col">
             <Header />
-          </Suspense>
-          <main id="main-content">
-            {children}
-          </main>
+            <main id="main-content" className="flex-1">
+              <Suspense>{children}</Suspense>
+            </main>
+          </div>
+          <Analytics />
         </ClientThemeProvider>
       </body>
     </html>
