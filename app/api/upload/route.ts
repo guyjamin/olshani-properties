@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server"
-import { writeFile } from "fs/promises"
-import { join } from "path"
+import { uploadToGitHub } from "@/lib/github"
 
 export async function POST(request: Request) {
     try {
@@ -16,18 +15,24 @@ export async function POST(request: Request) {
 
         // Generate unique filename
         const timestamp = Date.now()
-        const filename = `${timestamp}-${file.name.replace(/\s+/g, "-")}`
-        const path = join(process.cwd(), "public", filename)
+        const cleanName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_")
+        const filename = `${timestamp}-${cleanName}`
 
-        await writeFile(path, buffer)
+        // Upload to 'public' folder in GitHub
+        await uploadToGitHub(
+            `public/${filename}`,
+            buffer,
+            `Upload image ${filename} via Admin`
+        )
 
         return NextResponse.json({
             success: true,
             filename,
+            // The URL will be valid after Vercel rebuilds, but we can return the predictable path immediately
             url: `/${filename}`
         })
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error uploading file:", error)
-        return NextResponse.json({ error: "Failed to upload file" }, { status: 500 })
+        return NextResponse.json({ error: error.message || "Failed to upload file" }, { status: 500 })
     }
 }

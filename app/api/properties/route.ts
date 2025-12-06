@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server"
-import { promises as fs } from "fs"
-import path from "path"
+import { fetchGitHubFile, uploadToGitHub } from "@/lib/github"
 
-const dataFilePath = path.join(process.cwd(), "data", "properties.json")
+const PROPERTIES_PATH = "data/properties.json"
 
 export async function GET() {
     try {
-        const fileContents = await fs.readFile(dataFilePath, "utf8")
-        const properties = JSON.parse(fileContents)
+        // Always fetch fresh data from GitHub for the admin panel
+        const { content } = await fetchGitHubFile(PROPERTIES_PATH)
+        const properties = JSON.parse(content)
         return NextResponse.json(properties)
     } catch (error) {
         console.error("Error reading properties:", error)
@@ -19,19 +19,24 @@ export async function POST(request: Request) {
     try {
         const newProperty = await request.json()
 
-        // Read existing properties
-        const fileContents = await fs.readFile(dataFilePath, "utf8")
-        const properties = JSON.parse(fileContents)
+        // 1. Get current properties and SHA from GitHub
+        const { content, sha } = await fetchGitHubFile(PROPERTIES_PATH)
+        const properties = JSON.parse(content)
 
-        // Add new property
+        // 2. Add new property
         properties.push(newProperty)
 
-        // Write back to file
-        await fs.writeFile(dataFilePath, JSON.stringify(properties, null, 2))
+        // 3. Save back to GitHub
+        await uploadToGitHub(
+            PROPERTIES_PATH,
+            JSON.stringify(properties, null, 2),
+            `Add property: ${newProperty.projectName}`,
+            sha
+        )
 
         return NextResponse.json({ success: true, property: newProperty })
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error adding property:", error)
-        return NextResponse.json({ error: "Failed to add property" }, { status: 500 })
+        return NextResponse.json({ error: error.message || "Failed to add property" }, { status: 500 })
     }
 }

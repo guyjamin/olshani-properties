@@ -1,33 +1,36 @@
 import { NextResponse } from "next/server"
-import { promises as fs } from "fs"
-import path from "path"
+import { fetchGitHubFile, uploadToGitHub } from "@/lib/github"
 
-const dataFilePath = path.join(process.cwd(), "data", "properties.json")
+const PROPERTIES_PATH = "data/properties.json"
 
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
     try {
         const updatedProperty = await request.json()
         const { id } = params
 
-        // Read existing properties
-        const fileContents = await fs.readFile(dataFilePath, "utf8")
-        const properties = JSON.parse(fileContents)
+        // 1. Fetch current data
+        const { content, sha } = await fetchGitHubFile(PROPERTIES_PATH)
+        const properties = JSON.parse(content)
 
-        // Find and update property
+        // 2. Update logic
         const index = properties.findIndex((p: any) => p.id === id)
         if (index === -1) {
             return NextResponse.json({ error: "Property not found" }, { status: 404 })
         }
-
         properties[index] = { ...properties[index], ...updatedProperty }
 
-        // Write back to file
-        await fs.writeFile(dataFilePath, JSON.stringify(properties, null, 2))
+        // 3. Save to GitHub
+        await uploadToGitHub(
+            PROPERTIES_PATH,
+            JSON.stringify(properties, null, 2),
+            `Update property: ${updatedProperty.projectName}`,
+            sha
+        )
 
         return NextResponse.json({ success: true, property: properties[index] })
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error updating property:", error)
-        return NextResponse.json({ error: "Failed to update property" }, { status: 500 })
+        return NextResponse.json({ error: error.message || "Failed to update property" }, { status: 500 })
     }
 }
 
@@ -35,23 +38,28 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     try {
         const { id } = params
 
-        // Read existing properties
-        const fileContents = await fs.readFile(dataFilePath, "utf8")
-        const properties = JSON.parse(fileContents)
+        // 1. Fetch current data
+        const { content, sha } = await fetchGitHubFile(PROPERTIES_PATH)
+        const properties = JSON.parse(content)
 
-        // Filter out the property to delete
+        // 2. Filter out property
         const filteredProperties = properties.filter((p: any) => p.id !== id)
 
         if (filteredProperties.length === properties.length) {
             return NextResponse.json({ error: "Property not found" }, { status: 404 })
         }
 
-        // Write back to file
-        await fs.writeFile(dataFilePath, JSON.stringify(filteredProperties, null, 2))
+        // 3. Save to GitHub
+        await uploadToGitHub(
+            PROPERTIES_PATH,
+            JSON.stringify(filteredProperties, null, 2),
+            `Delete property: ${id}`,
+            sha
+        )
 
         return NextResponse.json({ success: true })
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error deleting property:", error)
-        return NextResponse.json({ error: "Failed to delete property" }, { status: 500 })
+        return NextResponse.json({ error: error.message || "Failed to delete property" }, { status: 500 })
     }
 }
