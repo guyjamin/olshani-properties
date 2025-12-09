@@ -104,7 +104,7 @@ export function HeroSection() {
             <div className="space-y-1">
               <div className="flex items-center gap-2 text-2xl md:text-3xl font-bold text-primary">
                 <MapPin className="w-6 h-6" />
-                2
+                4
               </div>
               <p className="text-sm text-muted-foreground">Prime Locations</p>
             </div>
