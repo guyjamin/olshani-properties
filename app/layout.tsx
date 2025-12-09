@@ -80,7 +80,9 @@ export const metadata: Metadata = {
     google: "Mh9C9Re9qOLdUnc8cRAHCPHx1YwWLQ7IwDETeNnm9XA",
   },
   icons: {
-    icon: "/Favicon.svg",
+    icon: "/olshani-logo.png",
+    shortcut: "/olshani-logo.png",
+    apple: "/olshani-logo.png",
   },
 }
 
