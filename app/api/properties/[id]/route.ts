@@ -1,16 +1,17 @@
 import { NextResponse } from "next/server"
-import { fetchGitHubFile, uploadToGitHub } from "@/lib/github"
+import { promises as fs } from "fs"
+import path from "path"
 
-const PROPERTIES_PATH = "data/properties.json"
+const PROPERTIES_FILE = path.join(process.cwd(), "data", "properties.json")
 
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
     try {
         const updatedProperty = await request.json()
         const { id } = params
 
-        // 1. Fetch current data
-        const { content, sha } = await fetchGitHubFile(PROPERTIES_PATH)
-        const properties = JSON.parse(content)
+        // 1. Read current properties from file
+        const fileContent = await fs.readFile(PROPERTIES_FILE, "utf-8")
+        const properties = JSON.parse(fileContent)
 
         // 2. Update logic
         const index = properties.findIndex((p: any) => p.id === id)
@@ -19,13 +20,8 @@ export async function PUT(request: Request, { params }: { params: { id: string }
         }
         properties[index] = { ...properties[index], ...updatedProperty }
 
-        // 3. Save to GitHub
-        await uploadToGitHub(
-            PROPERTIES_PATH,
-            JSON.stringify(properties, null, 2),
-            `Update property: ${updatedProperty.projectName}`,
-            sha
-        )
+        // 3. Save to file
+        await fs.writeFile(PROPERTIES_FILE, JSON.stringify(properties, null, 2), "utf-8")
 
         return NextResponse.json({ success: true, property: properties[index] })
     } catch (error: any) {
@@ -38,9 +34,9 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     try {
         const { id } = params
 
-        // 1. Fetch current data
-        const { content, sha } = await fetchGitHubFile(PROPERTIES_PATH)
-        const properties = JSON.parse(content)
+        // 1. Read current properties from file
+        const fileContent = await fs.readFile(PROPERTIES_FILE, "utf-8")
+        const properties = JSON.parse(fileContent)
 
         // 2. Filter out property
         const filteredProperties = properties.filter((p: any) => p.id !== id)
@@ -49,13 +45,8 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
             return NextResponse.json({ error: "Property not found" }, { status: 404 })
         }
 
-        // 3. Save to GitHub
-        await uploadToGitHub(
-            PROPERTIES_PATH,
-            JSON.stringify(filteredProperties, null, 2),
-            `Delete property: ${id}`,
-            sha
-        )
+        // 3. Save to file
+        await fs.writeFile(PROPERTIES_FILE, JSON.stringify(filteredProperties, null, 2), "utf-8")
 
         return NextResponse.json({ success: true })
     } catch (error: any) {

@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server"
-import { fetchGitHubFile, uploadToGitHub } from "@/lib/github"
+import { promises as fs } from "fs"
+import path from "path"
 
-const PROPERTIES_PATH = "data/properties.json"
+const PROPERTIES_FILE = path.join(process.cwd(), "data", "properties.json")
 
 export async function GET() {
     try {
-        // Always fetch fresh data from GitHub for the admin panel
-        const { content } = await fetchGitHubFile(PROPERTIES_PATH)
-        const properties = JSON.parse(content)
+        const fileContent = await fs.readFile(PROPERTIES_FILE, "utf-8")
+        const properties = JSON.parse(fileContent)
         return NextResponse.json(properties)
     } catch (error) {
         console.error("Error reading properties:", error)
@@ -19,20 +19,15 @@ export async function POST(request: Request) {
     try {
         const newProperty = await request.json()
 
-        // 1. Get current properties and SHA from GitHub
-        const { content, sha } = await fetchGitHubFile(PROPERTIES_PATH)
-        const properties = JSON.parse(content)
+        // 1. Read current properties from file
+        const fileContent = await fs.readFile(PROPERTIES_FILE, "utf-8")
+        const properties = JSON.parse(fileContent)
 
         // 2. Add new property
         properties.push(newProperty)
 
-        // 3. Save back to GitHub
-        await uploadToGitHub(
-            PROPERTIES_PATH,
-            JSON.stringify(properties, null, 2),
-            `Add property: ${newProperty.projectName}`,
-            sha
-        )
+        // 3. Save back to file
+        await fs.writeFile(PROPERTIES_FILE, JSON.stringify(properties, null, 2), "utf-8")
 
         return NextResponse.json({ success: true, property: newProperty })
     } catch (error: any) {
