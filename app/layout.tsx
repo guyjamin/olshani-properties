@@ -8,6 +8,7 @@ import "./globals.css"
 import { Header } from "@/components/header"
 import { ClientThemeProvider } from "@/components/client-theme-provider"
 import { SkipToContent } from "@/components/skip-to-content"
+import { ChristmasMagic } from "@/components/christmas-magic"
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -127,6 +128,7 @@ export default function RootLayout({
               <Suspense>{children}</Suspense>
             </main>
           </div>
+          <ChristmasMagic />
           <Analytics />
         </ClientThemeProvider>
       </body>
